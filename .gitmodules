@@ -1,0 +1,3 @@
+[submodule "lib/metricq"]
+	path = lib/metricq
+	url = https://github.com/metricq/metricq-cpp
