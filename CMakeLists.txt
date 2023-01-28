@@ -17,6 +17,8 @@ target_link_libraries(metricq-source-cmd
         metricq::source
         metricq::logger-nitro
         Nitro::options
+    PRIVATE
+        fmt::fmt-header-only
 )
 
 install(TARGETS metricq-source-cmd RUNTIME DESTINATION bin)
