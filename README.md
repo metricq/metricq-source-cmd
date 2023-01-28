@@ -37,7 +37,7 @@ Here's an example configuration.
       "unit": "s",
       "interval": "1s"
     },
-    "localhost.uptime": {
+    "localhost.load": {
       "command": "bash -c 'uptime | grep -Eo [0-9.]+$'",
       "unit": "",
       "interval": "2s"
