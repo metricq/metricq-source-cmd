@@ -42,11 +42,10 @@ private:
     void on_source_config(const metricq::json& config) override;
     void on_source_ready() override;
 
-    void cancel_executors();
+    void start_executors();
 
     asio::signal_set signals_;
 
-    std::atomic<bool> stop_requested_ = false;
     bool running_ = false;
 
     std::unordered_map<std::string, MetricExecutor> metric_executors_;

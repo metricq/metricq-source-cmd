@@ -41,7 +41,7 @@ CmdSource::CmdSource(const std::string& manager_host, const std::string& token)
                 return;
             }
             Log::info() << "Caught signal " << signal << ". Shutdown.";
-            cancel_executors();
+            metric_executors_.clear();
 
             Log::info() << "closing source";
             stop();
@@ -58,7 +58,11 @@ void CmdSource::on_source_config(const metricq::json& config)
 {
     Log::debug() << "CmdSource::on_source_config() called";
     Log::trace() << "config: " << config;
+    // Delete existing executors for reconfigure - we'll just create everything again
+    metric_executors_.clear();
+
     auto& executor_metrics = config.at("metrics");
+
     for (auto it = executor_metrics.begin(); it != executor_metrics.end(); ++it)
     {
         const auto& executor_config = it.value();
@@ -79,16 +83,20 @@ void CmdSource::on_source_config(const metricq::json& config)
             throw std::runtime_error("invalid configuration for metric executor");
         }
     }
+    // If it is running already it is a reconfigure and we need to start the executors and declare
+    // manually
+    if (running_)
+    {
+        declare_metrics();
+        start_executors();
+    }
 }
 
 void CmdSource::on_source_ready()
 {
     Log::debug() << "CmdSource::on_source_ready() called";
-    for (auto& metric_executor : metric_executors_)
-    {
-        metric_executor.second.start();
-    }
 
+    start_executors();
     running_ = true;
 }
 
@@ -97,20 +105,21 @@ void CmdSource::on_error(const std::string& message)
     Log::debug() << "CmdSource::on_error() called";
     Log::error() << "Shit hits the fan: " << message;
     signals_.cancel();
-    cancel_executors();
+    metric_executors_.clear();
 }
 
 void CmdSource::on_closed()
 {
     Log::debug() << "CmdSource::on_closed() called";
     signals_.cancel();
-    cancel_executors();
+    metric_executors_.clear();
 }
 
-void CmdSource::cancel_executors()
+void CmdSource::start_executors()
 {
+    Log::debug() << "CmdSource::start_executors() called";
     for (auto& metric_executor : metric_executors_)
     {
-        metric_executor.second.cancel();
+        metric_executor.second.start();
     }
 }

@@ -32,16 +32,19 @@ MetricExecutor::MetricExecutor(metricq::Metric<metricq::Source>& metric, metricq
                                asio::io_service& io_service)
 : interval(interval), timer_(io_service), command_(command), unit_(unit), metric_(metric)
 {
+    metric_.metadata.unit(unit_);
+    metric_.metadata.rate(1.0 / (interval.count() * 1e-9));
+    metric_.metadata["description"] = command_;
 }
 
 MetricExecutor::~MetricExecutor()
 {
+    timer_.cancel();
 }
 
 metricq::Timer::TimerResult MetricExecutor::timeout_cb(std::error_code)
 {
     Log::debug() << "sending metrics...";
-    metric_.chunk_size(1);
     double value = execute_command();
     auto current_time = metricq::Clock::now();
     metric_.send({ current_time, value });
@@ -50,18 +53,7 @@ metricq::Timer::TimerResult MetricExecutor::timeout_cb(std::error_code)
 
 void MetricExecutor::start()
 {
-    // define metadata
-    metric_.metadata.unit(unit_);
-    metric_.metadata.rate(1 / (interval.count() * 1e-9));
-    metric_.metadata["description"] = command_;
-
-    // start timer
     timer_.start([this](auto err) { return this->timeout_cb(err); }, interval);
-}
-
-void MetricExecutor::cancel()
-{
-    timer_.cancel();
 }
 
 double MetricExecutor::execute_command()
