@@ -3,6 +3,7 @@
 A simple MetricQ source that executes a set of commands that return floating point numbers and sends them as metrics.
 
 This source is more a proof of concept than a production-ready thing for the following considerations.
+There also is no proper error handling yet.
 
 # Security considerations
 
