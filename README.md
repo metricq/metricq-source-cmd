@@ -2,6 +2,8 @@
 
 A simple MetricQ source that executes a set of commands that return floating point numbers and sends them as metrics.
 
+This source is more a proof of concept than a production-ready thing for the following considerations.
+
 # Security considerations
 
 This source allows full code execution for anyone who:
