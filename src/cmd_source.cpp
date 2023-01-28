@@ -87,7 +87,6 @@ void CmdSource::on_source_config(const metricq::json& config)
     // manually
     if (running_)
     {
-        declare_metrics();
         start_executors();
     }
 }
