@@ -22,15 +22,19 @@
 #include <metricq/source.hpp>
 #include <metricq/timer.hpp>
 
-class MetricExecutor {
+class MetricExecutor
+{
 public:
-    MetricExecutor(metricq::Metric<metricq::Source>& metric, metricq::Duration interval, const std::string& command, const std::string& unit, asio::io_service& io_service);
+    MetricExecutor(metricq::Metric<metricq::Source>& metric, metricq::Duration interval,
+                   const std::string& command, const std::string& unit,
+                   asio::io_service& io_service);
     ~MetricExecutor();
 
     void start();
     void cancel();
 
     metricq::Timer::TimerResult timeout_cb(std::error_code);
+
 private:
     double execute_command();
 

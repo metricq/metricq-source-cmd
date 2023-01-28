@@ -33,17 +33,19 @@ CmdSource::CmdSource(const std::string& manager_host, const std::string& token)
     Log::debug() << "CmdSource::CmdSource() called";
 
     // Register signal handlers so that the daemon may be shut down.
-    signals_.async_wait([this](auto, auto signal) {
-        if (!signal)
+    signals_.async_wait(
+        [this](auto, auto signal)
         {
-            return;
-        }
-        Log::info() << "Caught signal " << signal << ". Shutdown.";
-        cancel_executors();
+            if (!signal)
+            {
+                return;
+            }
+            Log::info() << "Caught signal " << signal << ". Shutdown.";
+            cancel_executors();
 
-        Log::info() << "closing source";
-        stop();
-    });
+            Log::info() << "closing source";
+            stop();
+        });
 
     connect(manager_host);
 }
@@ -67,10 +69,10 @@ void CmdSource::on_source_config(const metricq::json& config)
             auto& metric = (*this)[metric_name];
             std::string unit = executor_config.at("unit");
             std::string command = executor_config.at("command");
-            metricq::Duration interval = metricq::duration_parse(executor_config.at("interval").get<std::string>());
+            metricq::Duration interval =
+                metricq::duration_parse(executor_config.at("interval").get<std::string>());
 
-            metric_executors_.try_emplace(
-                metric_name, metric, interval, command, unit, io_service);
+            metric_executors_.try_emplace(metric_name, metric, interval, command, unit, io_service);
         }
         else
         {
@@ -82,7 +84,7 @@ void CmdSource::on_source_config(const metricq::json& config)
 void CmdSource::on_source_ready()
 {
     Log::debug() << "CmdSource::on_source_ready() called";
-    for (auto & metric_executor : metric_executors_)
+    for (auto& metric_executor : metric_executors_)
     {
         metric_executor.second.start();
     }
@@ -105,8 +107,9 @@ void CmdSource::on_closed()
     cancel_executors();
 }
 
-void CmdSource::cancel_executors() {
-    for (auto & metric_executor : metric_executors_)
+void CmdSource::cancel_executors()
+{
+    for (auto& metric_executor : metric_executors_)
     {
         metric_executor.second.cancel();
     }

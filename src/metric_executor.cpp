@@ -27,13 +27,16 @@
 
 using Log = metricq::logger::nitro::Log;
 
-MetricExecutor::MetricExecutor(metricq::Metric<metricq::Source>& metric, metricq::Duration interval, const std::string& command, const std::string& unit, asio::io_service& io_service):
-  interval(interval), timer_(io_service), command_(command), unit_(unit), metric_(metric)
+MetricExecutor::MetricExecutor(metricq::Metric<metricq::Source>& metric, metricq::Duration interval,
+                               const std::string& command, const std::string& unit,
+                               asio::io_service& io_service)
+: interval(interval), timer_(io_service), command_(command), unit_(unit), metric_(metric)
 {
-
 }
 
-MetricExecutor::~MetricExecutor() {}
+MetricExecutor::~MetricExecutor()
+{
+}
 
 metricq::Timer::TimerResult MetricExecutor::timeout_cb(std::error_code)
 {
@@ -45,7 +48,8 @@ metricq::Timer::TimerResult MetricExecutor::timeout_cb(std::error_code)
     return metricq::Timer::TimerResult::repeat;
 }
 
-void MetricExecutor::start() {
+void MetricExecutor::start()
+{
     // define metadata
     metric_.metadata.unit(unit_);
     metric_.metadata.rate(1 / (interval.count() * 1e-9));
@@ -55,7 +59,8 @@ void MetricExecutor::start() {
     timer_.start([this](auto err) { return this->timeout_cb(err); }, interval);
 }
 
-void MetricExecutor::cancel() {
+void MetricExecutor::cancel()
+{
     timer_.cancel();
 }
 
@@ -65,10 +70,12 @@ double MetricExecutor::execute_command()
     std::array<char, 128> buffer{};
     std::string result;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command_.c_str(), "r"), pclose);
-    if (!pipe) {
+    if (!pipe)
+    {
         throw std::runtime_error("popen() failed!");
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+    {
         result += buffer.data();
     }
 
